@@ -12,11 +12,11 @@ transparentLinks: []             # visualize with some see-through
 scaleCollisionHull: 1.0          #scale urdf hull sizes for collision testing
 staticPostureTime: 0.02          # time in s per posture (nr. of samples => this * number of postures)
 initialPostures:                 #for static optimization, feasible postures to start from (useful only when not using global optimization)
-    - [0,0,0,0,0,0,0]
-    - [0,0.1,0,0.8,0,-0.4,0]
-    - [0,0,0,-0.8,0,0,0]
-    - [0,0.75,0,0,0,0,0]
-    - [0,-0.75,0,0,0.4,0,0]
+    - [0,0,0,0,0,0]
+    - [0,0.1,0,0.8,0,-0.4]
+    - [0,0,0,-0.8,0,0]
+    - [0,0.75,0,0,0,0]
+    - [0,-0.75,0,0,0.4,0]
 
 # proper trajectory optimization
 useGlobalOptimization: 0         #use global solver first (recommended)

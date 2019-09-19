@@ -208,6 +208,7 @@ class TrajectoryOptimizer(Optimizer):
                 g[self.num_dofs+n] = np.max(trajectory_data['positions'][:, n]) - self.limits[jn[n]]['upper']
             # max joint vel
             g[2*self.num_dofs+n] = np.max(np.abs(trajectory_data['velocities'][:, n])) - self.limits[jn[n]]['velocity']
+            print(g[2*self.num_dofs+n])
             # max torques
             g[3*self.num_dofs+n] = np.nanmax(np.abs(data.samples['torques'][:, n])) - self.limits[jn[n]]['torque']
 
@@ -247,7 +248,7 @@ class TrajectoryOptimizer(Optimizer):
                        [l1_name, l0_name] in self.config['ignoreLinkPairsForCollision']:
                         continue
 
-                    # neighbors can't collide with a proper joint range, so ignore
+                    # neighbors can't collide with a proper joint range, so ignore--
                     if l0 < self.model.num_links and l1 < self.model.num_links:
                         if l0_name in self.neighbors[l1_name]['links'] or l1_name in self.neighbors[l0_name]['links']:
                             continue
@@ -256,6 +257,7 @@ class TrajectoryOptimizer(Optimizer):
                         d = self.getLinkDistance(l0_name, l1_name, q)
                         if d < g[c_s+g_cnt]:
                             g[c_s+g_cnt] = d
+                            #print(l0_name + " " + l1_name)
                         g_cnt += 1
 
         self.last_g = g

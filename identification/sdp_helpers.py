@@ -9,6 +9,7 @@ from sympy import Basic, BlockDiagMatrix, Symbol, sympify
 from distutils.version import LooseVersion
 old_sympy = LooseVersion(sympy.__version__) < LooseVersion('0.7.4')
 
+
 import numpy as np
 
 import cvxopt
@@ -25,7 +26,7 @@ def LMI_PD(lhs, rhs=0):
     if old_sympy:
         lmi = lmi_sdp.LMI_PD(lhs, rhs)
     else:
-        lmi = lhs > sympify(rhs)
+        lmi = lhs > sympify(sympy.Matrix([[rhs]]))
 
     return lmi
 
@@ -34,7 +35,7 @@ def LMI_PSD(lhs, rhs=0):
     if old_sympy:
         lmi = lmi_sdp.LMI_PSD(lhs, rhs)
     else:
-        lmi = lhs >= sympify(rhs)
+        lmi = lhs >= sympify(sympy.Matrix([[rhs]]))
     return lmi
 
 ##copied some methods from lmi_sdp here for compatibility changes

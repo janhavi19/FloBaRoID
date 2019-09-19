@@ -21,6 +21,7 @@ parser.add_argument('--dryrun', help="don't actually send the trajectory", actio
 
 parser.add_argument('--plot', help='plot measured data', action='store_true')
 parser.add_argument('--plot-targets', dest='plot_targets', help="plot targets instead of measurements", action='store_true')
+parser.add_argument('--periods', help='number of times trajectory repeated',type=float)
 parser.set_defaults(plot=False, plot_targets=False, dryrun=False, filename='measurements.npz')
 args = parser.parse_args()
 
