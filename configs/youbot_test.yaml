@@ -32,23 +32,17 @@ trajectoryAngleMin: -25.0        #determines the range in which the pulsation ce
 trajectoryAngleMax:  25.0
 
 # instead of defining one range, define individual ranges for each link. If empty list, the values from trajectoryAngleMin/Max are used
-trajectoryAngleRanges: 
-        - [0.0, 338.0]
-        - [0.0, 155.0] 
-        - [-297.0, 0.0]
-        - [0.0, 205.0]
-        - [0.0, 335.0]
+trajectoryAngleRanges: []
  
 # manual angle limits: pairs of upper and lower (in degrees or rad, see useDeg). put in null for a joint, if values from URDF
 # should be used (or leave completely empty to use all from URDF)
 ovrPosLimit:
-    - null
-    - null #[-60.0, 60.0]
-    - null
-    - null
-    - null
-    - null
-    - null
+    - [-169.0,169.0]
+    - [-65.0,90.0] 
+    - [-151.0,146.0]
+    - [-102.5,102.5]
+    - [-165.0,165.0]
+  
 
 # maximize smallest velocity for each joint (better excitation of parameters)
 # (implemented as penalty, so will not necessarily reach the set value)
@@ -66,9 +60,9 @@ initialPostures: []                #for static optimization, feasible postures t
 # excitation
 excitationSimulate: 1            #simulate torques instead of using measurements (use e.g. for Gazebo)
 exciteMethod: 'ros'              #currently 'yarp', 'ros' or null (simulate)
-ros_move_group: 'full_lwr'       #if using ros, what move group to use for excitation
+ros_move_group: 'arm_1'       #if using ros, what move group to use for excitation
 excitationFrequency: 200.0       #data frequency in Hz for generating trajectories (should correspond to actual data transfer frequency)
-useDeg: 0                        #give angles in degrees (internal and data is always in rad)
+useDeg: 1                        #give angles in degrees (internal and data is always in rad)
 
 #### data preprocessing and selection
 
