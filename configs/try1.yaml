@@ -4,19 +4,20 @@
 optimizeTrajectory: 1            #find new parameters with optimization or load previous params from file (if no file exists, use random)
 
 useStaticTrajectories: 1         #generate simple 'trajectories' of static postures for identification of gravity terms
-numStaticPostures: 5             #how many postures to generate (must be >1)
+numStaticPostures: 6             #how many postures to generate (must be >1)
 ignoreLinksForCollision: []      #don't include these links for collision testing at all
 ignoreLinkPairsForCollision: []    #don't check collision between these pairs
 
 transparentLinks: []             # visualize with some see-through
 scaleCollisionHull: 0.1          #scale urdf hull sizes for collision testing
-staticPostureTime: 0.02          # time in s per posture (nr. of samples => this * number of postures)
+staticPostureTime: 0.2             # time in s per posture (nr. of samples => this * number of postures)
 initialPostures:                 #for static optimization, feasible postures to start from (useful only when not using global optimization)
-    - [0.1,0.1,-0.1,0.1,0.1]
-    - [0.2,0.2,-0.2,0.2,0.2]
-    - [0.4,0.4,-0.4,0.4,0.4]
-    - [0.6,0.6,-0.6,0.6,0.6]
-    - [0.8,0.8,-0.8,0.8,0.8]
+    - [0,0,0,0,0]
+    - [0.0,2.7053,-2.5482,1.789,0]
+    - [0.0,2.7053,-2.5482,1.004,0]
+    - [0.0,2.7053,-3.3336,2.574,0]
+    - [0.0,1.92,-1.763,1.789,0]
+    - [0.0,1.92,-4.119,3.36,0]
  
   
 # proper trajectory optimization
@@ -47,13 +48,11 @@ trajectoryAngleRanges: []
 # manual angle limits: pairs of upper and lower (in degrees or rad, see useDeg). put in null for a joint, if values from URDF
 # should be used (or leave completely empty to use all from URDF)
 ovrPosLimit:
-    - null
-    - null
-    - null
-    - null
-    - null
-    - null
-    - null
+    - [0.0,338.0]
+    - [0.0,155.0] 
+    - [-297.0,0.0]
+    - [0.0,205.0]
+    - [0.0,330.0]
 
 # maximize smallest velocity for each joint (better excitation of parameters)
 # (implemented as penalty, so will not necessarily reach the set value)
@@ -65,7 +64,7 @@ excitationSimulate: 1            #simulate torques instead of using measurements
 exciteMethod: 'ros'        #currently 'yarp', 'ros' or null (simulate)
 ros_move_group: 'arm_1'       #if using ros, what move group to use for excitation
 excitationFrequency: 200.0       #data frequency in Hz for generating trajectories (should correspond to actual data transfer frequency)
-useDeg: 0                        #give angles in degrees (internal and data is always in rad)
+useDeg: 1                        #give angles in degrees (internal and data is always in rad)
 
 #### data preprocessing and selection
 
@@ -138,13 +137,13 @@ checkAPrioriFeasibility: 0
 identifyClosestToCAD: 0
 
 # use a non-linear gradient based solver instead of SDP
-constrainUsingNL: 0
+constrainUsingNL: 1
 nlOptMaxIterations: 500
-nlOptSolver: 'IPOPT'   # one of IPOPT, SLSQP, ALPSO
+nlOptSolver: 'SLSQP'   # one of IPOPT, SLSQP, ALPSO
 
 # constrain parameters for links more than a certain condition number to the a priori values
 # (to prevent very big changes for parameters that are not expressed well in the data)
-noChange: 0
+noChange: 1
 noChangeThresh: 400
 
 # restrict COM to smallest enclosing box of STL Mesh (taken from <visual> in URDF)
@@ -164,7 +163,7 @@ limitCOMAprioriBoundary: 0.005     #allowed change of CAD value in both +- direc
 # constrain overall mass
 limitOverallMass: 1
 # if overall mass is set, constrain mass close to this value. If null, use a priori mass sum
-limitMassVal: 16.0
+limitMassVal: 0
 #allowed percentual change in both directions (1-range and 1+range)
 limitMassRange: 0.1
 
@@ -194,10 +193,10 @@ symmetryConstraints: []
 # known ones (taken from URDF file)
 # for some methods, this gives parameters that are more likely to be consistent
 # (not used with constrained SDP solver)
-useAPriori: 0
+useAPriori: 1
 
 # identify std parameters directly, but only for essential parameters (Gautier, 2013)
-useEssentialParams: 0
+useEssentialParams: 1
 
 # after getting essential base params, include dependent std columns for std essential params
 useDependents: 0
@@ -220,7 +219,7 @@ filterRegCutoff: 5   #frequency in Hz
 createPlots: 1               #create or show plots of measurements and estimated values
 outputModule: 'matplotlib'   #how to output plots (atm only ['matplotlib'])
 outputAs: 'html'              #one of ['html', 'pdf', 'tikz', 'interactive']
-outputFilename: 'output_kuka.html'    #specify custom filename for output file
+outputFilename: 'output_kuka2.html'    #specify custom filename for output file
 #outputFilename: 'kuka.pdf'   #specify custom filename for output file
 #outputFilename: 'kuka'       #specify custom filename for output file
 plotBaseDynamics: 0          #when using floating base, plot base forces or not

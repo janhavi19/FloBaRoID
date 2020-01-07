@@ -106,7 +106,7 @@
   </link>
   <!-- joint between arm_0_link and arm_1_link -->
   <joint name="arm_joint_1" type="revolute">
-    <origin rpy="0 0 2.96705972839" xyz="0.024 0 0.096"/>
+    <origin rpy="0 0 2.96705972839" xyz="0.0 0 0.0"/>
     <parent link="arm_link_0"/>
     <child link="arm_link_1"/>
     <axis xyz="0 0 -1"/>
@@ -146,7 +146,7 @@
   </link>
   <!-- joint between arm_1_link and arm_2_link -->
   <joint name="arm_joint_2" type="revolute">
-    <origin rpy="0 -1.1344640138 0" xyz="0.033 0 0.019"/>
+    <origin rpy="0 -1.1344640138 0" xyz="0.0 0 0.5"/>
     <parent link="arm_link_1"/>
     <child link="arm_link_2"/>
     <axis xyz="0 1 0"/>
@@ -187,7 +187,7 @@
       <safety_controller k_position="20" k_velocity="50" soft_lower_limit="-${joint_3_limit_soft}" soft_upper_limit="${threshold}" />
 		</joint>-->
   <joint name="arm_joint_3" type="revolute">
-    <origin rpy="0 2.54818070791 0" xyz="0.000 0.000 0.155"/>
+    <origin rpy="0 2.54818070791 0" xyz="0.000 0.000 0.555"/>
     <parent link="arm_link_2"/>
     <child link="arm_link_3"/>
     <axis xyz="0 1 0"/>
@@ -219,7 +219,7 @@
   </link>
   <!-- joint between arm_3_link and arm_4_link -->
   <joint name="arm_joint_4" type="revolute">
-    <origin rpy="0 -1.78896248329 0" xyz="0.000 0.000 0.135"/>
+    <origin rpy="0 -1.78896248329 0" xyz="0.000 0.000 0.535"/>
     <parent link="arm_link_3"/>
     <child link="arm_link_4"/>
     <axis xyz="0 1 0"/>
@@ -254,10 +254,10 @@
 
   <!-- joint between arm_4_link and arm_5_link -->
   <joint name="arm_joint_5" type="revolute">
-    <origin rpy="0 0 2.92342649709" xyz="-0.002 0 0.130"/>
+    <origin rpy="0 0 2.92342649709" xyz="0.0 0 0.530"/>
     <parent link="arm_link_4"/>
     <child link="arm_link_5"/>
-    <axis xyz="0 0 -1"/>
+    <axis xyz="0 0 1"/>
     <!--<calibration rising="${arm_5_ref}" falling="${arm_5_ref}"/>-->
     <dynamics damping="1" friction="1"/>
     <limit effort="1.0" lower="0" upper="5.84685299418" velocity="1.57079632679"/>

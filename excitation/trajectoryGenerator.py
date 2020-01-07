@@ -38,13 +38,15 @@ def simulateTrajectory(config, trajectory, model=None, measurements=None):
     trajectory_data['times'] = []
 
     freq = config['excitationFrequency']
+    #f= open("trajectory3.txt","a+")
     for t in range(0, int(trajectory.getPeriodLength()*freq)):
         trajectory.setTime(t/freq)
         q = np.array([trajectory.getAngle(d) for d in range(config['num_dofs'])])
         if config['useDeg']:
             q = np.deg2rad(q)
         trajectory_data['target_positions'].append(q)
-
+        #f.write("%s\n" % q)
+        
         qdot = np.array([trajectory.getVelocity(d) for d in range(config['num_dofs'])])
         if config['useDeg']:
             qdot = np.deg2rad(qdot)
@@ -57,9 +59,10 @@ def simulateTrajectory(config, trajectory, model=None, measurements=None):
 
         trajectory_data['times'].append(t/freq)
         trajectory_data['torques'].append(np.zeros(config['num_dofs']+fb))
-
+    #f.write("next iteration \n")
+    #f.close()
     num_samples = len(trajectory_data['times'])
-
+    
     #convert lists to numpy arrays
     trajectory_data['target_positions'] = np.array(trajectory_data['target_positions'])
     trajectory_data['positions'] = trajectory_data['target_positions']
@@ -295,6 +298,7 @@ class OscillationGenerator(object):
         self.b = b
         self.use_deg = use_deg
         self.q0 = float(q0)
+        print(q0)
         if use_deg:
             self.q0 = np.deg2rad(self.q0)
         self.nf = nf
@@ -306,8 +310,10 @@ class OscillationGenerator(object):
             q += (self.a[l-1]/(self.w_f*l))*np.sin(self.w_f*l*t) - \
                  (self.b[l-1]/(self.w_f*l))*np.cos(self.w_f*l*t)
         q += self.nf*self.q0
+       
         if self.use_deg:
             q = np.rad2deg(q)
+        
         return q
 
     def getVelocity(self, t):

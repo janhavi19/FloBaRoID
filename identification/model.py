@@ -602,7 +602,7 @@ class Model(object):
 
         if self.opt['filterRegressor']:
             order = 5                            # Filter order
-            fs = self.data.samples['frequency']  # Sampling freq
+            fs = self.data.samples['measured_frequency']  # Sampling freq
             fc = self.opt['filterRegCutoff']     # Cut-off frequency (Hz)
             b, a = signal.butter(order, fc / (fs / 2), btype='low', analog=False)
             for j in range(0, self.num_base_inertial_params):

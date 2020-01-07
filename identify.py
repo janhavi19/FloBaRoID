@@ -34,6 +34,9 @@ import identification.helpers as helpers
 from colorama import Fore
 from IPython import embed
 
+import logging
+logging.basicConfig()
+
 np.core.arrayprint._line_width = 160
 
 # Referenced papers:

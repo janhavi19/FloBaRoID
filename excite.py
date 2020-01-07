@@ -69,6 +69,8 @@ def main():
             trajectory = PulsedTrajectory(config['num_dofs'], use_deg=tf['use_deg'])
             trajectory.initWithParams(tf['a'], tf['b'], tf['q'], tf['nf'], tf['wf'])
             print("using trajectory from file {}".format(traj_file))
+            trajectory.setTime(0)
+            print(trajectory.getAngle(1))
     except IOError:
         print("No trajectory file found, can't excite ({})!".format(traj_file))
         sys.exit(1)

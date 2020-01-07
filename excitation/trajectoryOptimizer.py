@@ -16,6 +16,9 @@ from identification.data import Data
 from identification.helpers import URDFHelpers
 from excitation.trajectoryGenerator import simulateTrajectory, Trajectory, PulsedTrajectory
 from excitation.optimizer import plotter, Optimizer
+import PyKDL
+from PyKDL import *
+from scipy.spatial import distance
 
 
 class TrajectoryOptimizer(Optimizer):
@@ -51,11 +54,12 @@ class TrajectoryOptimizer(Optimizer):
             self.qmin = [self.config['trajectoryAngleMin']]*self.num_dofs
             self.qmax = [self.config['trajectoryAngleMax']]*self.num_dofs
             self.qinit = [0.5*self.config['trajectoryAngleMin'] + 0.5*self.config['trajectoryAngleMax']]*self.num_dofs
-
+      
         if not self.config['useDeg']:
             self.qmin = np.deg2rad(self.qmin)
             self.qmax = np.deg2rad(self.qmax)
             self.qinit = np.deg2rad(self.qinit)
+    
         #sin/cos coefficients
         self.amin = self.bmin = self.config['trajectoryCoeffMin']
         self.amax = self.bmax = self.config['trajectoryCoeffMax']
@@ -72,7 +76,7 @@ class TrajectoryOptimizer(Optimizer):
 
         self.last_best_f_f1 = 0
 
-        self.num_constraints = self.num_dofs*4  # angle, velocity, torque limits
+        self.num_constraints = self.num_dofs*2  # angle, velocity, torque limits
         if self.config['minVelocityConstraint']:
             self.num_constraints += self.num_dofs
 
@@ -80,7 +84,7 @@ class TrajectoryOptimizer(Optimizer):
 
         self.idyn_model = iDynTree.Model()
         iDynTree.modelFromURDF(self.config['urdf'], self.idyn_model)
-        self.neighbors = URDFHelpers.getNeighbors(self.idyn_model)
+        '''self.neighbors = URDFHelpers.getNeighbors(self.idyn_model)
 
         # amount of collision checks to be done
         eff_links = self.model.num_links - len(self.config['ignoreLinksForCollision']) + len(self.world_links)
@@ -100,7 +104,11 @@ class TrajectoryOptimizer(Optimizer):
                 if (link, l) not in nb_pairs and (l, link) not in nb_pairs:
                     nb_pairs.append((link, l))
         self.num_coll_constraints -=  (len(nb_pairs) +        # neighbors
-                                  len(self.config['ignoreLinkPairsForCollision']))  # custom combinations
+                                  len(self.config['ignoreLinkPairsForCollision']))  # custom combinations'''
+
+
+
+        self.num_coll_constraints = 2                        
         self.num_constraints += self.num_coll_constraints
 
         self.initVisualizer()
@@ -112,7 +120,7 @@ class TrajectoryOptimizer(Optimizer):
         ab_len = self.num_dofs*self.nf[0]
         a = np.array(np.split(np.array(x[self.num_dofs+1:self.num_dofs+1+ab_len]), self.num_dofs))
         b = np.array(np.split(np.array(x[self.num_dofs+1+ab_len:self.num_dofs+1+ab_len*2]), self.num_dofs))
-        return wf, q, a, b
+        return wf,q, a, b
 
 
     def approx_jacobian(self, f, x, epsilon, *args):
@@ -148,7 +156,7 @@ class TrajectoryOptimizer(Optimizer):
         print("call #{}/{}".format(self.iter_cnt, self.iter_max))
 
         wf, q, a, b = self.vecToParams(x)
-
+        
         if self.config['verbose']:
             print('wf {}'.format(wf))
             print('a {}'.format(np.round(a,5).tolist()))
@@ -185,7 +193,7 @@ class TrajectoryOptimizer(Optimizer):
             plotter(self.config, data=trajectory_data)
 
         f = np.linalg.cond(self.model.YBase)
-        #f = np.log(np.linalg.det(model.YBase.T.dot(model.YBase)))   #fisher information matrix
+        #f = np.log(np.linalg.det(self.model.YBase.T.dot(self.model.YBase)))   #fisher information matrix
 
         #xBaseModel = np.dot(model.Binv | K, model.xStdModel)
         #f = np.linalg.cond(model.YBase.dot(np.diag(xBaseModel)))    #weighted with CAD params
@@ -197,8 +205,12 @@ class TrajectoryOptimizer(Optimizer):
         for n in range(self.num_dofs):
             # check for joint limits
             # joint pos lower
+            print("minma of trajectory",np.min(trajectory_data['positions'][:, n]))
+            print("maxima of trajectory",np.max(trajectory_data['positions'][:, n]))
+            
             if len(self.config['ovrPosLimit'])>n and self.config['ovrPosLimit'][n]:
                 g[n] = np.deg2rad(self.config['ovrPosLimit'][n][0]) - np.min(trajectory_data['positions'][:, n])
+                
             else:
                 g[n] = self.limits[jn[n]]['lower'] - np.min(trajectory_data['positions'][:, n])
             # joint pos upper
@@ -207,34 +219,66 @@ class TrajectoryOptimizer(Optimizer):
             else:
                 g[self.num_dofs+n] = np.max(trajectory_data['positions'][:, n]) - self.limits[jn[n]]['upper']
             # max joint vel
-            g[2*self.num_dofs+n] = np.max(np.abs(trajectory_data['velocities'][:, n])) - self.limits[jn[n]]['velocity']
-            print(g[2*self.num_dofs+n])
+            #g[2*self.num_dofs+n] = np.max(np.abs(trajectory_data['velocities'][:, n])) - self.limits[jn[n]]['velocity']
+            
             # max torques
-            g[3*self.num_dofs+n] = np.nanmax(np.abs(data.samples['torques'][:, n])) - self.limits[jn[n]]['torque']
+           # g[3*self.num_dofs+n] = np.nanmax(np.abs(data.samples['torques'][:, n])) - self.limits[jn[n]]['torque']
 
-            if self.config['minVelocityConstraint']:
+            '''if self.config['minVelocityConstraint']:
                 # max joint vel of trajectory should at least be 10% of joint limit
-                g[4*self.num_dofs+n] = self.limits[jn[n]]['velocity']*self.config['minVelocityPercentage'] - \
-                                    np.max(np.abs(trajectory_data['velocities'][:, n]))
+                g[3*self.num_dofs+n] = self.limits[jn[n]]['velocity']*self.config['minVelocityPercentage'] - \
+                                    np.max(np.abs(trajectory_data['velocities'][:, n]))'''
 
             # highest joint torque should at least be 10% of joint limit
-            #g[5*self.num_dofs+n] = self.limits[jn[n]]['torque']*0.1 - np.max(np.abs(data.samples['torques'][:, n]))
+            '''g[5*self.num_dofs+n] = self.limits[jn[n]]['torque']*0.1 - np.max(np.abs(data.samples['torques'][:, n]))
             f_tmp = self.limits[jn[n]]['torque']*0.1 - np.max(np.abs(data.samples['torques'][:, n]))
             if f_tmp > 0:
-                f1+=f_tmp
-
+                f1+=f_tmp'''
+        print(g)   
         # check collision constraints
         # (for whole trajectory but only get closest distance as constraint value)
         c_s = self.num_constraints - self.num_coll_constraints  # start where collision constraints start
+        traversal = iDynTree.Traversal()
+        success = self.idyn_model.computeFullTreeTraversal(traversal)
+        rotation = iDynTree.Rotation(1.0, 0.0, 0.0,
+                                     0.0, 1.0, 0.0,
+                                     0.0, 0.0, 1.0)
+        position = iDynTree.Position(0.0, 0.0, 0.0)
+        worldHbase = iDynTree.Transform(rotation, position)
+        jointPosition = iDynTree.VectorDynSize(5)
+        
         if self.config['verbose'] > 1:
             print('checking collisions')
         for p in range(0, trajectory_data['positions'].shape[0], 10):
-            g_cnt = 0
+            g_cnt1 = 0
+            g_cnt2 = 1
+        
             if self.config['verbose'] > 1:
                 print("Sample {}".format(p))
             q = trajectory_data['positions'][p]
 
-            for l0 in range(self.model.num_links + len(self.world_links)):
+            for i in range(len(q)):
+                jointPosition[i] = q[i]
+
+            linkPositions = iDynTree.LinkPositions(self.idyn_model) 
+            iDynTree.ForwardPositionKinematics(self.idyn_model, traversal, worldHbase,jointPosition, linkPositions)
+            pose_link5 = linkPositions(5)
+            z = pose_link5.getPosition().getVal(2)
+            origin = (0, 0 , 0)
+            end_eff = (pose_link5.getPosition().getVal(0), pose_link5.getPosition().getVal(1), (pose_link5.getPosition().getVal(2)))
+            dist = distance.euclidean(origin, end_eff)
+            
+            if(z < 0.35 ):
+                if (z < g[c_s+g_cnt1]):
+                    g[c_s+g_cnt1] = z
+               
+            if(dist < 0.25):
+                if (dist < g[c_s+g_cnt2]):
+                    g[c_s+g_cnt2] = dist
+                
+                
+                      
+            '''for l0 in range(self.model.num_links + len(self.world_links)):
                 for l1 in range(self.model.num_links + len(self.world_links)):
                     l0_name = (self.model.linkNames + self.world_links)[l0]
                     l1_name = (self.model.linkNames + self.world_links)[l1]
@@ -256,11 +300,13 @@ class TrajectoryOptimizer(Optimizer):
                     if l0 < l1:
                         d = self.getLinkDistance(l0_name, l1_name, q)
                         if d < g[c_s+g_cnt]:
+                            print("l0: {} l1: {}".format(l0,l1))
                             g[c_s+g_cnt] = d
-                            #print(l0_name + " " + l1_name)
-                        g_cnt += 1
+                            
+                        g_cnt += 1'''
 
         self.last_g = g
+        
 
         #add min join torques as second objective
         if f1 > 0:
@@ -310,11 +356,11 @@ class TrajectoryOptimizer(Optimizer):
         #test variable bounds
         wf, q, a, b = self.vecToParams(x)
         wf_t = wf >= self.wf_min and wf <= self.wf_max
-        q_t = np.all(q <= self.qmax) and np.all(q >= self.qmin)
+        #q_t = np.all(q <= self.qmax) and np.all(q >= self.qmin)
         a_t = np.all(a <= self.amax) and np.all(a >= self.amin)
         b_t = np.all(b <= self.bmax) and np.all(b >= self.bmin)
-        res = wf_t and q_t and a_t and b_t
-
+        res = wf_t and a_t and b_t
+        
         if not res:
             print("bounds violated")
 
@@ -323,31 +369,36 @@ class TrajectoryOptimizer(Optimizer):
 
     def testConstraints(self, g):
         g = np.array(g)
+        print(g)
         c_s = self.num_constraints - self.num_coll_constraints  # start where collision constraints start
+         
+        
         res = np.all(g[:c_s] <= self.config['minTolConstr'])
         res_c = np.all(g[c_s:] > 0)
         if not res:
             print("constraints violated:")
             if True in np.in1d(list(range(1, 2*self.num_dofs)), np.where(g >= self.config['minTolConstr'])):
                 print("- angle limits")
-                print(np.array(g)[list(range(1, 2*self.num_dofs))])
-            if True in np.in1d(list(range(2*self.num_dofs, 3*self.num_dofs)), np.where(g >= self.config['minTolConstr'])):
+                
+                
+            '''if True in np.in1d(list(range(2*self.num_dofs, 3*self.num_dofs)), np.where(g >= self.config['minTolConstr'])):
                 print("- max velocity limits")
                 #print np.array(g)[range(2*self.num_dofs,3*self.num_dofs)]
             if True in np.in1d(list(range(3*self.num_dofs, 4*self.num_dofs)), np.where(g >= self.config['minTolConstr'])):
-                print("- max torque limits")
+                print("- max torque limits")'''
 
-            if self.config['minVelocityConstraint']:
-                if True in np.in1d(list(range(4*self.num_dofs, 5*self.num_dofs)), np.where(g >= self.config['minTolConstr'])):
+            '''if self.config['minVelocityConstraint']:
+                if True in np.in1d(list(range(3*self.num_dofs, 4*self.num_dofs)), np.where(g >= self.config['minTolConstr'])):
                     print("- min velocity limits")
 
             if not res_c:
-                print("- collision constraints")
+                print("- collision constraints")'''
 
             #if True in np.in1d(range(5*self.num_dofs,6*self.num_dofs), np.where(g >= self.config['minTolConstr'])):
             #    print "- min torque limits"
             #    print g[range(5*self.num_dofs,6*self.num_dofs)]
         return res and res_c
+        
 
 
     def testParams(self, **kwargs):
@@ -390,9 +441,11 @@ class TrajectoryOptimizer(Optimizer):
 
         self.addVarsAndConstraints(opt_prob)
         sol_vec = self.runOptimizer(opt_prob)
+        print(sol_vec)
 
         sol_wf, sol_q, sol_a, sol_b = self.vecToParams(sol_vec)
-        self.trajectory.initWithParams(sol_a, sol_b, sol_q, self.nf, sol_wf)
+        
+        self.trajectory.initWithParams(sol_a, sol_b,sol_q, self.nf, sol_wf)
 
         if self.config['showOptimizationGraph']:
             plt.ioff()

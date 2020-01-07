@@ -10,13 +10,13 @@ ignoreLinkPairsForCollision: []    #don't check collision between these pairs
 
 transparentLinks: []             # visualize with some see-through
 scaleCollisionHull: 0.1          #scale urdf hull sizes for collision testing
-staticPostureTime: 0.02          # time in s per posture (nr. of samples => this * number of postures)
+staticPostureTime: 2             # time in s per posture (nr. of samples => this * number of postures)
 initialPostures:                 #for static optimization, feasible postures to start from (useful only when not using global optimization)
-    - [2.9,1.1,-2.5,1.7,2.9]
-    - [2.8,1.2,-2.9,1.6,2.5]
-    - [2.6,1.5,-2.3,1.6,2.7]
-    - [2.4,1.5,-2.2,1.4,2.8]
-    - [2.6,1.1,-2.2,1.9,2.9]
+    - [0,0,0,0,0]
+    - [0,0.1,0,0.8,0]
+    - [0,0,0,-0.8,0]
+    - [0,0.75,0,0,0]
+    - [0,-0.75,0,0,0.4]
  
   
 # proper trajectory optimization
@@ -24,7 +24,7 @@ useGlobalOptimization: 0        #use global solver first (recommended)
 globalSolver: 'NSGA2'            #ALPSO (particle swarm) or NSGA2 (genetic algorithm)
 globalOptIterations: 1
 useLocalOptimization: 1          #do local (gradient based) optimization after using global solver
-localSolver: 'PSQP'             #one of SLSQP, PSQP, IPOPT
+localSolver: 'SLSQP'             #one of SLSQP, PSQP, IPOPT
 localOptIterations: 10            #how many optimizer iterations to use. this is not equal to function calls (does not include gradients etc.)
 minTolConstr: 0.01               #threshold for being within constraints (only used for display)
 showOptimizationGraph: 1         #display updating graph during trajectory optimization
@@ -52,8 +52,7 @@ ovrPosLimit:
     - null
     - null
     - null
-    - null
-    - null
+   
 
 # maximize smallest velocity for each joint (better excitation of parameters)
 # (implemented as penalty, so will not necessarily reach the set value)

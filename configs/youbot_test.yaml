@@ -5,7 +5,7 @@ optimizeTrajectory: 1            #find new parameters with optimization or load 
 
 # trajectory optimization
 useGlobalOptimization: 1         #use global solver first (recommended)
-globalSolver: 'NSGA2'            #ALPSO (particle swarm) or NSGA2 (genetic algorithm)
+globalSolver: 'ALPSO'            #ALPSO (particle swarm) or NSGA2 (genetic algorithm)
 globalOptIterations: 10          #Swarm iterations or Generations
 globalOptSize: 12                #Swarm size (any) or Population size (multiple of 4)
 useLocalOptimization: 1         #do local optimization after using global solver
@@ -17,31 +17,48 @@ showOptimizationTrajs: 1         #display the trajectory plot after each optimiz
 showModelVisualization: 0        #display 3D model of robot during optimization (static only atm)
 transparentLinks: []             #visualize with some see-through
 ignoreLinksForCollision: []      #don't include these links for collision testing at all
-ignoreLinkPairsForCollision: []    #don't check collision between these pairs
-    #- ['base_link', 'arm_link_0']
+ignoreLinkPairsForCollision:     #don't check collision between these pairs
+    - ['arm_link_0', 'arm_link_2']
+    - ['arm_link_0', 'arm_link_3']
+    - ['arm_link_0', 'arm_link_4']
+    - ['arm_link_1', 'arm_link_3']
+    - ['arm_link_2', 'arm_link_4']
+    - ['arm_link_1', 'arm_link_4']
+    - ['arm_link_3', 'arm_link_5']
+    - ['arm_link_2', 'arm_link_5']
 
     
 # initial values to start trajectory optimization from (useful only when not using global optimization)
-trajectoryPulseInit: 0.5         #determines length of one period of trajectory (smaller=longer)
-trajectoryPulseMin:  0.3
-trajectoryPulseMax:  1.0
+trajectoryPulseInit: 0.1         #determines length of one period of trajectory (smaller=longer)
+trajectoryPulseMin:  0.01
+trajectoryPulseMax:  2.0
 trajectoryCoeffInit: 0.3         #set this as high as possible without violating constraints at start (see output after start)
-trajectoryCoeffMin: -0.5         #determines in which range the chosen params have to be (smaller=lower vel)
-trajectoryCoeffMax:  0.5
+trajectoryCoeffMin: -1.5         #determines in which range the chosen params have to be (smaller=lower vel)
+trajectoryCoeffMax:  1.5
 trajectoryAngleMin: -25.0        #determines the range in which the pulsation center for each joint will be (in degrees)
 trajectoryAngleMax:  25.0
 
 # instead of defining one range, define individual ranges for each link. If empty list, the values from trajectoryAngleMin/Max are used
-trajectoryAngleRanges: []
+trajectoryAngleRanges: 
+    - [0.0,337.0]
+    - [0.0,154.0] 
+    - [-297.0,0.0]
+    - [0.0,204.0]
+    - [0.0,329.0]
  
 # manual angle limits: pairs of upper and lower (in degrees or rad, see useDeg). put in null for a joint, if values from URDF
 # should be used (or leave completely empty to use all from URDF)
 ovrPosLimit:
-    - [-169.0,169.0]
-    - [-65.0,90.0] 
-    - [-151.0,146.0]
-    - [-102.5,102.5]
-    - [-165.0,165.0]
+    - [0.0,286.4]
+    - [0.0,114.6] 
+    - [-251.0,0.0]
+    - [0.0,172.0]
+    - [0.0,286.5]
+    #- [0.0,5.89921]
+    #- [0.0,2.70526] 
+    #- [-5.18363,0.0]
+    #- [0.0,3.57792]
+    #- [0.0,5.75959]
   
 
 # maximize smallest velocity for each joint (better excitation of parameters)
@@ -62,7 +79,7 @@ excitationSimulate: 1            #simulate torques instead of using measurements
 exciteMethod: 'ros'              #currently 'yarp', 'ros' or null (simulate)
 ros_move_group: 'arm_1'       #if using ros, what move group to use for excitation
 excitationFrequency: 200.0       #data frequency in Hz for generating trajectories (should correspond to actual data transfer frequency)
-useDeg: 1                        #give angles in degrees (internal and data is always in rad)
+useDeg: 0                        #give angles in degrees (internal and data is always in rad)
 
 #### data preprocessing and selection
 
@@ -107,7 +124,7 @@ minTol: 0.0001
 floatingBase: 0
 
 # identify motor friction (constant sign dependent offset and velocity dependent)
-identifyFriction: 0
+identifyFriction: 1
 
 # identify only one friction value for both directions (necessary for URDF)
 identifySymmetricVelFriction: 1
@@ -217,9 +234,9 @@ filterRegCutoff: 5   #frequency in Hz
 createPlots: 1               #create or show plots of measurements and estimated values
 outputModule: 'matplotlib'   #how to output plots (atm only ['matplotlib'])
 outputAs: 'html'              #one of ['html', 'pdf', 'tikz', 'interactive']
-outputFilename: 'output_youbotkuka.html'    #specify custom filename for output file
-#outputFilename: 'youbotkuka.pdf'   #specify custom filename for output file
-#outputFilename: 'youbotkuka'       #specify custom filename for output file
+outputFilename: 'output_kuka.html'    #specify custom filename for output file
+#outputFilename: 'kuka.pdf'   #specify custom filename for output file
+#outputFilename: 'kuka'       #specify custom filename for output file
 plotBaseDynamics: 0          #when using floating base, plot base forces or not
 plotPerJoint: 1              #plot each joint torque in one graph
 plotPrioriTorques: 1         #plot the computed torques from the a priori model parameters

@@ -99,7 +99,7 @@ def main(config, trajectory, data):
     group.set_joint_value_target(plan.joint_trajectory.points[0].positions)
     #group.set_named_target('full_lwr_home')
     group.go()
-
+    
     # record measurements
     jSt = RecordJointStates()
     group.execute(plan, wait=False)

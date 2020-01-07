@@ -5,43 +5,48 @@ optimizeTrajectory: 1            #find new parameters with optimization or load 
 
 # trajectory optimization
 useGlobalOptimization: 1         #use global solver first (recommended)
-globalSolver: 'ALPSO'            #ALPSO (particle swarm) or NSGA2 (genetic algorithm)
+globalSolver: 'NSGA2'            #ALPSO (particle swarm) or NSGA2 (genetic algorithm)
 globalOptIterations: 10          #Swarm iterations or Generations
 globalOptSize: 12                #Swarm size (any) or Population size (multiple of 4)
-useLocalOptimization: 1          #do local optimization after using global solver
+useLocalOptimization: 1         #do local optimization after using global solver
 localSolver: 'SLSQP'             #one of SLSQP, PSQP, IPOPT (all three gradient); COBYLA (no gradient)
 localOptIterations: 5            #how many optimizer iterations to use. this is not equal to function calls if gradients are approximated
 minTolConstr: 0.01               #threshold for being within constraints (only used for display)
 showOptimizationGraph: 1         #display updating graph during trajectory optimization
-showOptimizationTrajs: 0         #display the trajectory plot after each optimization step
+showOptimizationTrajs: 1         #display the trajectory plot after each optimization step
 showModelVisualization: 0        #display 3D model of robot during optimization (static only atm)
 transparentLinks: []             #visualize with some see-through
-
 ignoreLinksForCollision: []      #don't include these links for collision testing at all
-ignoreLinkPairsForCollision: []     #don't check collision between these pairs
+ignoreLinkPairsForCollision: []    #don't check collision between these pairs
+    #- ['base_link', 'arm_link_0']
+
+    
 # initial values to start trajectory optimization from (useful only when not using global optimization)
 trajectoryPulseInit: 0.5         #determines length of one period of trajectory (smaller=longer)
 trajectoryPulseMin:  0.3
 trajectoryPulseMax:  1.0
-trajectoryCoeffInit: 0.3         #set this as high as possible without violating constraints at start (see output after start)
+trajectoryCoeffInit: 0.001         #set this as high as possible without violating constraints at start (see output after start)
 trajectoryCoeffMin: -0.5         #determines in which range the chosen params have to be (smaller=lower vel)
 trajectoryCoeffMax:  0.5
 trajectoryAngleMin: -25.0        #determines the range in which the pulsation center for each joint will be (in degrees)
 trajectoryAngleMax:  25.0
 
 # instead of defining one range, define individual ranges for each link. If empty list, the values from trajectoryAngleMin/Max are used
-trajectoryAngleRanges: []
-
+trajectoryAngleRanges: 
+    - [0.0,337.0]
+    - [0.0,154.0] 
+    - [-296.0,0]
+    - [0.0,204.0]
+    
 # manual angle limits: pairs of upper and lower (in degrees or rad, see useDeg). put in null for a joint, if values from URDF
 # should be used (or leave completely empty to use all from URDF)
 ovrPosLimit:
-    - null
-    - null #[-60.0, 60.0]
-    - null
-    - null
-    - null
-    - null
-    - null
+    - [0.0,337.0]
+    - [0.0,154.0] 
+    - [-296.0,0]
+    - [0.0,204.0]
+ 
+  
 
 # maximize smallest velocity for each joint (better excitation of parameters)
 # (implemented as penalty, so will not necessarily reach the set value)
@@ -53,17 +58,13 @@ useStaticTrajectories: 0         #generate simple 'trajectories' of static postu
 numStaticPostures: 5             #how many postures to generate (must be >1)
 scaleCollisionHull: 0.8          #scale urdf hull sizes for collision testing
 staticPostureTime: 0.02          # time in s per posture (nr. of samples => this * number of postures)
-initialPostures:                 #for static optimization, feasible postures to start from (useful only when not using global optimization)
-    - [0,0,0,0,0,0,0]
-    - [0,0.1,0,0.8,0,-0.4,0]
-    - [0,0,0,-0.8,0,0,0]
-    - [0,0.75,0,0,0,0,0]
-    - [0,-0.75,0,0,0.4,0,0]
+initialPostures: []                #for static optimization, feasible postures to start from (useful only when not using global optimization)
+  
 
 # excitation
 excitationSimulate: 1            #simulate torques instead of using measurements (use e.g. for Gazebo)
 exciteMethod: 'ros'              #currently 'yarp', 'ros' or null (simulate)
-ros_move_group: 'full_lwr'       #if using ros, what move group to use for excitation
+ros_move_group: 'arm_1'       #if using ros, what move group to use for excitation
 excitationFrequency: 200.0       #data frequency in Hz for generating trajectories (should correspond to actual data transfer frequency)
 useDeg: 0                        #give angles in degrees (internal and data is always in rad)
 
@@ -110,7 +111,7 @@ minTol: 0.0001
 floatingBase: 0
 
 # identify motor friction (constant sign dependent offset and velocity dependent)
-identifyFriction: 1
+identifyFriction: 0
 
 # identify only one friction value for both directions (necessary for URDF)
 identifySymmetricVelFriction: 1
@@ -197,7 +198,7 @@ symmetryConstraints: []
 useAPriori: 0
 
 # identify std parameters directly, but only for essential parameters (Gautier, 2013)
-useEssentialParams: 0
+useEssentialParams: 1
 
 # after getting essential base params, include dependent std columns for std essential params
 useDependents: 0
@@ -220,9 +221,9 @@ filterRegCutoff: 5   #frequency in Hz
 createPlots: 1               #create or show plots of measurements and estimated values
 outputModule: 'matplotlib'   #how to output plots (atm only ['matplotlib'])
 outputAs: 'html'              #one of ['html', 'pdf', 'tikz', 'interactive']
-outputFilename: 'output_kuka.html'    #specify custom filename for output file
-#outputFilename: 'kuka.pdf'   #specify custom filename for output file
-#outputFilename: 'kuka'       #specify custom filename for output file
+outputFilename: 'output_youbotkuka.html'    #specify custom filename for output file
+#outputFilename: 'youbotkuka.pdf'   #specify custom filename for output file
+#outputFilename: 'youbotkuka'       #specify custom filename for output file
 plotBaseDynamics: 0          #when using floating base, plot base forces or not
 plotPerJoint: 1              #plot each joint torque in one graph
 plotPrioriTorques: 1         #plot the computed torques from the a priori model parameters
@@ -238,8 +239,8 @@ showTiming: 0                #show times various steps have taken
 showEssentialSteps: 0        #stop after every reduction step and show values
 outputBarycentric: 0         #output all values in barycentric (e.g. urdf) form
 showStandardParams: 1        #display a list of identified standard params
-showBaseParams: 0            #display a list of identified base params (if applicable)
-showBaseEqns: 0              #show which std params are combined for each base param
+showBaseParams: 1            #display a list of identified base params (if applicable)
+showBaseEqns: 1              #show which std params are combined for each base param
 outputLatex: 0               #format parameter output as latex
 showTriangleConsistency: 0   #show per-link consistency including triangle inequality
 verbose: 1                   #show more messages, [0,1,2]
